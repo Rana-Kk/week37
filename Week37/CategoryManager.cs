@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Week37
+{
+    internal class CategoryManager
+    {
+        private List<Category> categories = [];
+        private int nextId = 1;
+
+        /// <summary>
+        /// Adds a new category if the name isn't already taken (case-insensitive).
+        /// </summary>
+        /// <returns>The created category, or null if the name already exists.</returns>
+        public Category? AddCategory(string name)
+        {
+            if (NameExists(name))
+            {
+                return null;
+            }
+
+            Category category = new(nextId, name);
+            categories.Add(category);
+            nextId++;
+            return category;
+        }
+
+        /// <summary>
+        /// Renames a category, as long as the new name isn't already used elsewhere.
+        /// </summary>
+        /// <returns>True if the rename succeeded; false if the ID wasn't found or the name is taken.</returns>
+        public bool EditCategory(int id, string newName)
+        {
+            Category? category = GetById(id);
+            if (category is null || NameExists(newName, excludeId: id))
+            {
+                return false;
+            }
+            category.Name = newName;
+            return true;
+        }
+
+        public bool DeleteCategory(int id)
+        {
+            Category? category = GetById(id);
+            if (category is null)
+            {
+                return false;
+            }
+            categories.Remove(category);
+            return true;
+        }
+
+        public Category? GetById(int id)
+        {
+            return categories.FirstOrDefault(c => c.Id == id);
+        }
+
+        public bool NameExists(string name, int? excludeId = null)
+        {
+            return categories.Any(c => 
+            c.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
+            c.Id != excludeId);
+        }
+
+        public List<Category> GetAll()
+        {
+            return categories;
+        }
+        public void LoadAll(List<Category> loadedCategories)
+        {
+            categories = loadedCategories;
+            nextId = categories.Count > 0 ? categories.Max(c => c.Id) + 1 : 1;
+        }
+
+        public void ClearAll()
+        {
+            categories.Clear();
+            nextId = 1;
+        }
+
+    }
+}
